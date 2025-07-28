@@ -1,2 +1,4 @@
 target/
+tests/temp/
+tests/php_errors.log
 .DS_Store

@@ -105,8 +105,8 @@ pub fn startup(_ty: i32, module_number: i32) -> i32 {
 /// Used by the `phpinfo()` function and when you run `php -i`.
 pub extern "C" fn php_module_info(_module: *mut ext_php_rs::zend::ModuleEntry) {
     ext_php_rs::info_table_start!();
-    ext_php_rs::info_table_row!("PHP Error Formatter Extension", "enabled");
-    ext_php_rs::info_table_row!("Version", "0.1.0");
+    ext_php_rs::info_table_row!("Error Message Format Extension", "enabled");
+    ext_php_rs::info_table_row!("Error Message Format Version", env!("CARGO_PKG_VERSION"));
     ext_php_rs::info_table_end!();
 }
 

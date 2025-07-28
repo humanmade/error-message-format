@@ -8,6 +8,13 @@ fn test_build() {
 }
 
 #[test]
+fn test_version() {
+	utils::build();
+	let output = utils::run_cli("<?php phpinfo(); ?>");
+	assert_contains!(output.trim(), &format!("Error Message Format Version => {}", env!("CARGO_PKG_VERSION")));
+}
+
+#[test]
 fn test_cli_error_output_default() {
     utils::build();
     let code = r#"
