@@ -134,6 +134,12 @@ jobs:
         -
           target: x86_64-apple-darwin
           php-version: '8.3'
+        -
+          target: aarch64-apple-darwin
+          php-version: '8.4'
+        -
+          target: x86_64-apple-darwin
+          php-version: '8.4'
 
     steps:
       - name: Checkout
