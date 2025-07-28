@@ -120,6 +120,5 @@ pub extern "C" fn php_module_info(_module: *mut ext_php_rs::zend::ModuleEntry) {
 #[php_module]
 #[php(startup = "startup")]
 pub fn get_module(module: ModuleBuilder) -> ModuleBuilder {
-    module
-        .info_function(php_module_info)
+    module.info_function(php_module_info)
 }
