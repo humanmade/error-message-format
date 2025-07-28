@@ -129,6 +129,7 @@ jobs:
         with:
           php-version: ${{ matrix.php-version }}
 
+      - run: php -i
       - name: Generate version for tag
         if: github.ref_type == 'tag'
         run: echo "ERROR_MESSAGE_FORMAT_VERSION=${{github.ref_name}}" >> $GITHUB_ENV
