@@ -89,6 +89,7 @@ jobs:
       - name: Update Cargo.toml version
         run: sed -i "s/^version = .*/version = \"${{ env.ERROR_MESSAGE_FORMAT_VERSION }}\"/" Cargo.toml
 
+      - name: ls -la target/${{ matrix.target }}/release/
       - name: Rename file
         run: cp target/${{ matrix.target }}/release/lib${{ env.EXTENSION_NAME }}.so php${{ matrix.php-version }}-${{ matrix.target }}-${{ env.EXTENSION_NAME }}.so
 
