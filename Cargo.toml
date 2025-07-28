@@ -1,5 +1,5 @@
 [package]
-name = "php_error_extension"
+name = "php-error-extension"
 version = "0.1.0"
 edition = "2021"
 
