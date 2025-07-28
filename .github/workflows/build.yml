@@ -163,6 +163,9 @@ jobs:
       - name: Update Cargo.toml version
         run: sed -i .bak "s/^version = .*/version = \"${{ env.ERROR_MESSAGE_FORMAT_VERSION }}\"/" Cargo.toml
 
+      - name: Test
+        run: cargo test
+
       - name: Build
         run: cargo build --release --target ${{ matrix.target }}
 

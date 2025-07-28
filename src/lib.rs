@@ -2,10 +2,10 @@
 
 mod ffi;
 
-use ext_php_rs::prelude::*;
-use ext_php_rs::zend::{ExecutorGlobals, IniEntryDef};
 use ext_php_rs::flags::IniEntryPermission;
+use ext_php_rs::prelude::*;
 use ext_php_rs::types::ZendStr;
+use ext_php_rs::zend::{ExecutorGlobals, IniEntryDef};
 use std::sync::{Mutex, OnceLock};
 
 // Global storage for the original error callback
@@ -27,65 +27,62 @@ unsafe extern "C" fn error_callback(
         None
     };
 
-	// Get the current INI setting for error_message_format
-	let ini_values = ExecutorGlobals::get().ini_values();
-	let Some(Some(format_string)) = ini_values.get("error_message_format") else {
-		// If no format string, call the original error handler with original message
-		if let Some(original_callback) = original_cb {
-			original_callback(error_type, error_filename, error_lineno, message);
-		}
-		return;
-	};
+    // Get the current INI setting for error_message_format
+    let ini_values = ExecutorGlobals::get().ini_values();
+    let Some(Some(format_string)) = ini_values.get("error_message_format") else {
+        // If no format string, call the original error handler with original message
+        if let Some(original_callback) = original_cb {
+            original_callback(error_type, error_filename, error_lineno, message);
+        }
+        return;
+    };
 
-	if format_string.is_empty() {
-		// If format string is empty, call the original error handler with original message
-		if let Some(original_callback) = original_cb {
-			original_callback(error_type, error_filename, error_lineno, message);
-		}
-		return;
-	}
+    if format_string.is_empty() {
+        // If format string is empty, call the original error handler with original message
+        if let Some(original_callback) = original_cb {
+            original_callback(error_type, error_filename, error_lineno, message);
+        }
+        return;
+    }
 
-	// Extract filename and message
-	let filename = if error_filename.is_null() {
-		"".to_string()
-	} else {
-		String::try_from(&*error_filename).unwrap_or("".to_string())
-	};
+    // Extract filename and message
+    let filename = if error_filename.is_null() {
+        "".to_string()
+    } else {
+        String::try_from(&*error_filename).unwrap_or("".to_string())
+    };
 
-	let original_message = if message.is_null() {
-		"".to_string()
-	} else {
-		String::try_from(&*message).unwrap_or("".to_string())
-	};
+    let original_message = if message.is_null() {
+        "".to_string()
+    } else {
+        String::try_from(&*message).unwrap_or("".to_string())
+    };
 
-	// Apply our custom formatting
-	let formatted_message = format_string
-		.replace("{type}", &error_type.to_string())
-		.replace("{file}", &filename)
-		.replace("{line}", &error_lineno.to_string())
-		.replace("{message}", &original_message);
+    // Apply our custom formatting
+    let formatted_message = format_string
+        .replace("{type}", &error_type.to_string())
+        .replace("{file}", &filename)
+        .replace("{line}", &error_lineno.to_string())
+        .replace("{message}", &original_message);
 
-	// Create a new zend_string with the formatted message
-	let mut zend_str = ZendStr::new(&formatted_message, false);
-	let new_message = zend_str.as_mut_ptr();
+    // Create a new zend_string with the formatted message
+    let mut zend_str = ZendStr::new(&formatted_message, false);
+    let new_message = zend_str.as_mut_ptr();
 
-	// Call the original error handler with the formatted message
-	if let Some(original_callback) = original_cb {
-		original_callback(error_type, error_filename, error_lineno, new_message);
-	}
+    // Call the original error handler with the formatted message
+    if let Some(original_callback) = original_cb {
+        original_callback(error_type, error_filename, error_lineno, new_message);
+    }
 }
-
 
 /// Startup function to register INI entries and install error hook
 pub fn startup(_ty: i32, module_number: i32) -> i32 {
     // Register our INI entry for error_message_format
-    let ini_entries: Vec<IniEntryDef> = vec![
-        IniEntryDef::new(
-            "error_message_format".to_owned(),
-            "".to_owned(), // Default empty - no custom formatting
-            &IniEntryPermission::All, // Can be changed at runtime
-        ),
-    ];
+    let ini_entries: Vec<IniEntryDef> = vec![IniEntryDef::new(
+        "error_message_format".to_owned(),
+        "".to_owned(),            // Default empty - no custom formatting
+        &IniEntryPermission::All, // Can be changed at runtime
+    )];
     IniEntryDef::register(ini_entries, module_number);
 
     // Install the error callback hook

@@ -1,6 +1,6 @@
 #![allow(non_camel_case_types)]
 
-use ext_php_rs::ffi::{zend_string};
+use ext_php_rs::ffi::zend_string;
 use std::os::raw::{c_int, c_uint};
 
 // PHP error callback function pointer type
