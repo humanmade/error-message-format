@@ -14,7 +14,8 @@ static ORIGINAL_ERROR_CB: OnceLock<Mutex<Option<ffi::zend_error_cb_t>>> = OnceLo
 /// Our custom error callback that intercepts ALL PHP errors
 unsafe extern "C" fn error_callback(
     error_type: std::os::raw::c_int,
-    error_filename: *mut ext_php_rs::ffi::zend_string,
+    #[cfg(not(php81))] error_filename: *const std::os::raw::c_char,
+    #[cfg(php81)] error_filename: *const ext_php_rs::ffi::zend_string,
     error_lineno: std::os::raw::c_uint,
     message: *mut ext_php_rs::ffi::zend_string,
 ) {
@@ -49,7 +50,13 @@ unsafe extern "C" fn error_callback(
     let filename = if error_filename.is_null() {
         "".to_string()
     } else {
-        String::try_from(&*error_filename).unwrap_or("".to_string())
+        #[cfg(php81)]
+        let filename = String::try_from(&*error_filename).unwrap_or("".to_string());
+        #[cfg(not(php81))]
+        let filename =
+            String::from_utf8_lossy(unsafe { std::ffi::CStr::from_ptr(error_filename) }.to_bytes())
+                .to_string();
+        filename
     };
 
     let original_message = if message.is_null() {
@@ -110,16 +117,9 @@ pub extern "C" fn php_module_info(_module: *mut ext_php_rs::zend::ModuleEntry) {
     ext_php_rs::info_table_end!();
 }
 
-/// Simple test function to verify the extension works
-#[php_function]
-pub fn hello_world(name: String) -> String {
-    format!("Hello, {}!", name)
-}
-
 #[php_module]
 #[php(startup = "startup")]
 pub fn get_module(module: ModuleBuilder) -> ModuleBuilder {
     module
         .info_function(php_module_info)
-        .function(wrap_function!(hello_world))
 }
