@@ -1,0 +1,241 @@
+name: Build
+
+on: [push]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  EXTENSION_NAME: error-message-format
+
+jobs:
+  linux:
+    runs-on: ${{ matrix.builder }}
+    services:
+      registry:
+        image: registry:2
+        credentials:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+        ports:
+          - 5000:5000
+    strategy:
+      matrix:
+        include:
+        -
+          builder: ubuntu-latest
+          target: x86_64-unknown-linux-gnu
+          platform: amd64
+          php-version: '8.0'
+          distro: bullseye
+        -
+          builder: buildjet-4vcpu-ubuntu-2204-arm
+          target: aarch64-unknown-linux-gnu
+          platform: arm64
+          php-version: '8.0'
+          distro: bullseye
+        -
+          builder: ubuntu-latest
+          target: x86_64-unknown-linux-gnu
+          platform: amd64
+          php-version: '8.1'
+        -
+          builder: buildjet-4vcpu-ubuntu-2204-arm
+          target: aarch64-unknown-linux-gnu
+          platform: arm64
+          php-version: '8.1'
+        -
+          builder: ubuntu-latest
+          target: x86_64-unknown-linux-gnu
+          platform: amd64
+          php-version: '8.2'
+        -
+          builder: buildjet-4vcpu-ubuntu-2204-arm
+          target: aarch64-unknown-linux-gnu
+          platform: arm64
+          php-version: '8.2'
+        -
+          builder: ubuntu-latest
+          target: x86_64-unknown-linux-gnu
+          platform: amd64
+          php-version: '8.3'
+        -
+          builder: buildjet-4vcpu-ubuntu-2204-arm
+          target: aarch64-unknown-linux-gnu
+          platform: arm64
+          php-version: '8.3'
+        -
+          builder: ubuntu-latest
+          target: x86_64-unknown-linux-gnu
+          platform: amd64
+          php-version: '8.4'
+        -
+          builder: buildjet-4vcpu-ubuntu-2204-arm
+          target: aarch64-unknown-linux-gnu
+          platform: arm64
+          php-version: '8.4'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ matrix.php-version }}-${{ matrix.target }}
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v2
+        with:
+          driver-opts: network=host
+
+      - name: Setup docker
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          push: true
+          tags: localhost:5000/php-build:latest
+          build-args: |
+            FROM_PHP=${{ matrix.php-version }}
+            FROM_DISTRO=${{ matrix.distro || 'bookworm' }}
+
+      - name: Generate version for tag
+        if: github.ref_type == 'tag'
+        run: echo "ERROR_MESSAGE_FORMAT_VERSION=${{github.ref_name}}" >> $GITHUB_ENV
+
+      - name: Generate version for branch
+        if: github.ref_type == 'branch'
+        run: echo "ERROR_MESSAGE_FORMAT_VERSION=0.0.1+${{github.ref_name}}" | sed 's!/!-!g' >> $GITHUB_ENV
+
+      - name: Update Cargo.toml version
+        run: sed -i "s/^version = .*/version = \"${{ env.ERROR_MESSAGE_FORMAT_VERSION }}\"/" Cargo.toml
+
+      - name: Build
+        run: docker run -v ~/.cargo/registry:/root/.cargo/registry -v ~/.cargo/git:/root/.cargo/git --platform linux/${{ matrix.platform }} --rm -v $PWD:/code localhost:5000/php-build:latest bash -c 'rustup target add ${{ matrix.target }} ; cargo build --release --target ${{ matrix.target }}'
+
+      - name: Rename file
+        run: cp target/${{ matrix.target }}/release/lib${{ env.EXTENSION_NAME }}.so php${{ matrix.php-version }}-${{ matrix.target }}-${{ env.EXTENSION_NAME }}.so
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: php${{ matrix.php-version }}-${{ matrix.target }}
+          path: php${{ matrix.php-version }}-${{ matrix.target }}-${{ env.EXTENSION_NAME }}.so
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            php${{ matrix.php-version }}-${{ matrix.target }}-${{ env.EXTENSION_NAME }}.so
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install AWS CLI
+        uses: unfor19/install-aws-cli-action@v1
+        with:
+          arch: ${{ matrix.platform }}
+      - name: Upload to S3
+        run: aws --region us-east-1 s3 cp php${{ matrix.php-version }}-${{ matrix.target }}-${{ env.EXTENSION_NAME }}.so s3://altis-afterburner/${{github.ref_name}}/php${{ matrix.php-version }}-${{ matrix.target }}.so --acl public-read
+        env:
+          AWS_ACCESS_KEY_ID: "${{ secrets.AWS_ACCESS_KEY_ID }}"
+          AWS_SECRET_ACCESS_KEY: "${{ secrets.AWS_SECRET_ACCESS_KEY }}"
+
+  macos:
+    runs-on: macos-14
+    strategy:
+      matrix:
+        include:
+        -
+          target: aarch64-apple-darwin
+          php-version: '8.0'
+        -
+          target: x86_64-apple-darwin
+          php-version: '8.0'
+        -
+          target: aarch64-apple-darwin
+          php-version: '8.1'
+        -
+          target: x86_64-apple-darwin
+          php-version: '8.1'
+        -
+          target: aarch64-apple-darwin
+          php-version: '8.2'
+        -
+          target: x86_64-apple-darwin
+          php-version: '8.2'
+        -
+          target: aarch64-apple-darwin
+          php-version: '8.3'
+        -
+          target: x86_64-apple-darwin
+          php-version: '8.3'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ matrix.php-version }}-${{ matrix.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Install latest rust toolchain
+        run: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+
+      - name: Install the target
+        run: rustup target add ${{ matrix.target }}
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+
+      - name: Generate version for tag
+        if: github.ref_type == 'tag'
+        run: echo "ERROR_MESSAGE_FORMAT_VERSION=${{github.ref_name}}" >> $GITHUB_ENV
+
+      - name: Generate version for branch
+        if: github.ref_type == 'branch'
+        run: echo "ERROR_MESSAGE_FORMAT_VERSION=0.0.1+${{github.ref_name}}" | sed 's!/!-!g' >> $GITHUB_ENV
+
+      - name: Update Cargo.toml version
+        run: sed -i .bak "s/^version = .*/version = \"${{ env.ERROR_MESSAGE_FORMAT_VERSION }}\"/" Cargo.toml
+
+      - name: Build
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Rename file
+        run: mv target/${{ matrix.target }}/release/lib${{ env.EXTENSION_NAME }}.dylib target/php${{ matrix.php-version }}-${{ matrix.target }}-${{ env.EXTENSION_NAME }}.dylib
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: php${{ matrix.php-version }}-${{ matrix.target }}
+          path: target/php${{ matrix.php-version }}-${{ matrix.target }}-${{ env.EXTENSION_NAME }}.dylib
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            target/php${{ matrix.php-version }}-${{ matrix.target }}-${{ env.EXTENSION_NAME }}.dylib
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload to S3
+        run: aws --region us-east-1 s3 cp target/php${{ matrix.php-version }}-${{ matrix.target }}-${{ env.EXTENSION_NAME }}.dylib s3://altis-afterburner/${{github.ref_name}}/php${{ matrix.php-version }}-${{ matrix.target }}.dylib --acl public-read
+        env:
+          AWS_ACCESS_KEY_ID: "${{ secrets.AWS_ACCESS_KEY_ID }}"
+          AWS_SECRET_ACCESS_KEY: "${{ secrets.AWS_SECRET_ACCESS_KEY }}"
