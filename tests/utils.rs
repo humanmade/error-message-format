@@ -34,6 +34,8 @@ pub fn run_cli(code: &str) -> String {
             env::current_dir().unwrap().to_str().unwrap(),
             std::env::consts::DLL_EXTENSION
         ))
+        .arg("-c")
+        .arg(env::current_dir().unwrap().join("tests/php.ini"))
         .arg(script_filename.clone())
         .output()
         .unwrap();
