@@ -105,6 +105,8 @@ pub fn startup(_ty: i32, module_number: i32) -> i32 {
             ffi::zend_error_cb = error_callback;
         }
     } else {
+        eprintln!("Failed to lock ORIGINAL_ERROR_CB mutex");
+        dbg!("failed to init.");
         return 1; // Error
     }
 
