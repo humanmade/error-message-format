@@ -28,6 +28,19 @@ pub fn run_cli(code: &str) -> String {
     let script_name = rand_name.as_str();
     let script_filename = write_test_file(&script_name, code);
 
+    let t = Command::new("php")
+        .arg(format!(
+            "-dextension={}/target/debug/liberror_message_format.{}",
+            env::current_dir().unwrap().to_str().unwrap(),
+            std::env::consts::DLL_EXTENSION
+        ))
+        .arg("-c")
+        .arg(env::current_dir().unwrap().join("tests/php.ini"))
+        .arg("-i")
+        .output()
+        .unwrap();
+    dbg!(&t);
+
     let output = Command::new("php")
         .arg(format!(
             "-dextension={}/target/debug/liberror_message_format.{}",
