@@ -110,6 +110,8 @@ pub fn startup(_ty: i32, module_number: i32) -> i32 {
         return 1; // Error
     }
 
+    dbg!("Initialization complete");
+
     0 // Success
 }
 
