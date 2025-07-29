@@ -19,6 +19,8 @@ unsafe extern "C" fn error_callback(
     error_lineno: std::os::raw::c_uint,
     message: *mut ext_php_rs::ffi::zend_string,
 ) {
+    dbg!("Error Callback Invoked");
+    dbg!("Has original callback? {}", ORIGINAL_ERROR_CB.get().is_some());
     let original_mutex = ORIGINAL_ERROR_CB.get_or_init(|| Mutex::new(None));
 
     // Get the original callback first
