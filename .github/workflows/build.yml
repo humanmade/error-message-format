@@ -85,8 +85,6 @@ jobs:
 
       - run: php -i -c tests/php.ini
 
-      - run: sudo apt-get install -y libclang-dev
-
       - name: Generate version for branch
         if: github.ref_type == 'branch'
         run: echo "ERROR_MESSAGE_FORMAT_VERSION=0.0.1+${{github.ref_name}}" | sed 's!/!-!g' >> $GITHUB_ENV
@@ -95,6 +93,7 @@ jobs:
         run: sed -i "s/^version = .*/version = \"${{ env.ERROR_MESSAGE_FORMAT_VERSION }}\"/" Cargo.toml
 
       - uses: mxschmitt/action-tmate@v3
+        if: runner.debug == '1'
 
       - name: Test
         run: cargo test -- --nocapture
