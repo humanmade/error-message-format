@@ -19,8 +19,6 @@ unsafe extern "C" fn error_callback(
     error_lineno: std::os::raw::c_uint,
     message: *mut ext_php_rs::ffi::zend_string,
 ) {
-    dbg!("Error Callback Invoked");
-    dbg!("Has original callback? {}", ORIGINAL_ERROR_CB.get().is_some());
     let original_mutex = ORIGINAL_ERROR_CB.get_or_init(|| Mutex::new(None));
 
     // Get the original callback first
@@ -105,12 +103,8 @@ pub fn startup(_ty: i32, module_number: i32) -> i32 {
             ffi::zend_error_cb = error_callback;
         }
     } else {
-        eprintln!("Failed to lock ORIGINAL_ERROR_CB mutex");
-        dbg!("failed to init.");
         return 1; // Error
     }
-
-    dbg!("Initialization complete");
 
     0 // Success
 }

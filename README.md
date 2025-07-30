@@ -9,6 +9,12 @@ $url = $_SERVER['REQUEST_URI'];
 ini_set( 'error_message_format', '{message} from URL' . $url );
 ```
 
+## Compatibily
+
+Supports PHP versions 8+
+
+⚠️ Currently `error_message_format` is not compatible with Xdebug.
+
 ## Resources
 
 - [ext-php-rs Documentation](https://docs.rs/ext-php-rs)
