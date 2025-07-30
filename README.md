@@ -9,6 +9,12 @@ $url = $_SERVER['REQUEST_URI'];
 ini_set( 'error_message_format', '{message} from URL' . $url );
 ```
 
+Available replacements:
+
+- `{message}` The error message string
+- `{file}` The file name the error originated
+- `{line}` The line number the error originated
+
 ## Compatibily
 
 Supports PHP versions 8+
