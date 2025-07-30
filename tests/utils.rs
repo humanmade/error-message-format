@@ -40,8 +40,6 @@ pub fn run_cli(code: &str) -> String {
         .output()
         .unwrap();
 
-    dbg!(&output);
-
     fs::remove_file(script_filename).unwrap();
     String::from_utf8(output.stdout).unwrap()
 }
