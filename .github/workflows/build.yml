@@ -22,7 +22,7 @@ jobs:
           php-version: '8.0'
           distro: bullseye
         -
-          builder: buildjet-4vcpu-ubuntu-2204-arm
+          builder: ubuntu-24.04-arm
           target: aarch64-unknown-linux-gnu
           platform: arm64
           php-version: '8.0'
@@ -33,7 +33,7 @@ jobs:
           platform: amd64
           php-version: '8.1'
         -
-          builder: buildjet-4vcpu-ubuntu-2204-arm
+          builder: ubuntu-24.04-arm
           target: aarch64-unknown-linux-gnu
           platform: arm64
           php-version: '8.1'
@@ -43,7 +43,7 @@ jobs:
           platform: amd64
           php-version: '8.2'
         -
-          builder: buildjet-4vcpu-ubuntu-2204-arm
+          builder: ubuntu-24.04-arm
           target: aarch64-unknown-linux-gnu
           platform: arm64
           php-version: '8.2'
@@ -53,7 +53,7 @@ jobs:
           platform: amd64
           php-version: '8.3'
         -
-          builder: buildjet-4vcpu-ubuntu-2204-arm
+          builder: ubuntu-24.04-arm
           target: aarch64-unknown-linux-gnu
           platform: arm64
           php-version: '8.3'
@@ -63,7 +63,7 @@ jobs:
           platform: amd64
           php-version: '8.4'
         -
-          builder: buildjet-4vcpu-ubuntu-2204-arm
+          builder: ubuntu-24.04-arm
           target: aarch64-unknown-linux-gnu
           platform: arm64
           php-version: '8.4'
