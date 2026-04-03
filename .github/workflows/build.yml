@@ -19,18 +19,6 @@ jobs:
           builder: ubuntu-latest
           target: x86_64-unknown-linux-gnu
           platform: amd64
-          php-version: '8.0'
-          distro: bullseye
-        -
-          builder: ubuntu-24.04-arm
-          target: aarch64-unknown-linux-gnu
-          platform: arm64
-          php-version: '8.0'
-          distro: bullseye
-        -
-          builder: ubuntu-latest
-          target: x86_64-unknown-linux-gnu
-          platform: amd64
           php-version: '8.1'
         -
           builder: ubuntu-24.04-arm
@@ -67,6 +55,16 @@ jobs:
           target: aarch64-unknown-linux-gnu
           platform: arm64
           php-version: '8.4'
+         -
+          builder: ubuntu-latest
+          target: x86_64-unknown-linux-gnu
+          platform: amd64
+          php-version: '8.5'
+        -
+          builder: ubuntu-24.04-arm
+          target: aarch64-unknown-linux-gnu
+          platform: arm64
+          php-version: '8.5'  
     steps:
       - uses: actions/checkout@v4
       - uses: actions-rust-lang/setup-rust-toolchain@v1
@@ -121,7 +119,7 @@ jobs:
     strategy:
       matrix:
         target: [aarch64-apple-darwin, x86_64-apple-darwin]
-        php-version: ['8.0', '8.1', '8.2', '8.3', '8.4']
+        php-version: ['8.1', '8.2', '8.3', '8.4', '8.5']
 
     steps:
       - name: Checkout
