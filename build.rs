@@ -84,7 +84,6 @@ impl PHPInfo {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd)]
 enum ApiVersion {
-    Php80 = 2020_09_30,
     Php81 = 2021_09_02,
     Php82 = 2022_08_29,
     Php83 = 2023_08_31,
