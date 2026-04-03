@@ -7,7 +7,7 @@ edition = "2021"
 crate-type = ["cdylib"]
 
 [dependencies]
-ext-php-rs = { version = "0.14", features = ["anyhow"] }
+ext-php-rs = { version = "0.15", features = ["anyhow"] }
 anyhow = "1.0"
 
 [build-dependencies]
