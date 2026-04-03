@@ -89,26 +89,27 @@ enum ApiVersion {
     Php82 = 2022_08_29,
     Php83 = 2023_08_31,
     Php84 = 2024_09_24,
+    Php85 = 2025_09_25,
 }
 
 impl ApiVersion {
     /// Returns the minimum API version supported.
     pub const fn min() -> Self {
-        ApiVersion::Php80
+        ApiVersion::Php81
     }
 
     /// Returns the maximum API version supported.
     pub const fn max() -> Self {
-        ApiVersion::Php84
+        ApiVersion::Php85
     }
 
     pub fn versions() -> Vec<Self> {
         vec![
-            ApiVersion::Php80,
             ApiVersion::Php81,
             ApiVersion::Php82,
             ApiVersion::Php83,
             ApiVersion::Php84,
+            ApiVersion::Php85,
         ]
     }
 
@@ -122,11 +123,12 @@ impl ApiVersion {
 
     pub fn cfg_name(self) -> &'static str {
         match self {
-            ApiVersion::Php80 => "php80",
             ApiVersion::Php81 => "php81",
             ApiVersion::Php82 => "php82",
             ApiVersion::Php83 => "php83",
             ApiVersion::Php84 => "php84",
+            ApiVersion::Php85 => "php85",
+
         }
     }
 }
@@ -136,11 +138,11 @@ impl TryFrom<u32> for ApiVersion {
 
     fn try_from(version: u32) -> Result<Self, Self::Error> {
         match version {
-            x if ((ApiVersion::Php80 as u32)..(ApiVersion::Php81 as u32)).contains(&x) => Ok(ApiVersion::Php80),
             x if ((ApiVersion::Php81 as u32)..(ApiVersion::Php82 as u32)).contains(&x) => Ok(ApiVersion::Php81),
             x if ((ApiVersion::Php82 as u32)..(ApiVersion::Php83 as u32)).contains(&x) => Ok(ApiVersion::Php82),
             x if ((ApiVersion::Php83 as u32)..(ApiVersion::Php84 as u32)).contains(&x) => Ok(ApiVersion::Php83),
-            x if (ApiVersion::Php84 as u32) == x => Ok(ApiVersion::Php84),
+            x if ((ApiVersion::Php84 as u32)..(ApiVersion::Php85 as u32)).contains(&x) => Ok(ApiVersion::Php84),
+            x if (ApiVersion::Php85 as u32) == x => Ok(ApiVersion::Php85),
             version => Err(anyhow!(
               "The current version of PHP is not supported. Current PHP API version: {}, requires a version between {} and {}",
               version,
@@ -158,10 +160,10 @@ fn check_php_version(info: &PHPInfo) -> Result<()> {
     let version: ApiVersion = version.try_into()?;
 
     // Set up cfg flags like ext-php-rs does
-    println!("cargo::rustc-check-cfg=cfg(php80, php81, php82, php83, php84)");
+    println!("cargo::rustc-check-cfg=cfg(php81, php82, php83, php84, php85)");
 
-    if version == ApiVersion::Php80 {
-        println!("cargo:warning=PHP 8.0 is EOL and will no longer be supported in a future release. Please upgrade to a supported version of PHP. See https://www.php.net/supported-versions.php for information on version support timelines.");
+    if version == ApiVersion::Php81 {
+        println!("cargo:warning=PHP 8.1 is EOL and will no longer be supported in a future release. Please upgrade to a supported version of PHP. See https://www.php.net/supported-versions.php for information on version support timelines.");
     }
 
     // Set cfg flags for all supported versions up to the current one
