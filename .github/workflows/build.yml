@@ -55,12 +55,12 @@ jobs:
           target: aarch64-unknown-linux-gnu
           platform: arm64
           php-version: '8.4'
-         -
+        -
           builder: ubuntu-latest
           target: x86_64-unknown-linux-gnu
           platform: amd64
           php-version: '8.5'
-         -
+        -
           builder: ubuntu-24.04-arm
           target: aarch64-unknown-linux-gnu
           platform: arm64
