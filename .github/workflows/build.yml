@@ -115,7 +115,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   macos:
-    runs-on: macos-14
+    runs-on: macos-15
     strategy:
       matrix:
         target: [aarch64-apple-darwin, x86_64-apple-darwin]
